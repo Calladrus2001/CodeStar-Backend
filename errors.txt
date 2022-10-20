@@ -4,4 +4,6 @@ ERRORS
 
 **** **** *** **** ****
 
-Type 6 = "TypeError: Cannot read properties of undefined (reading 'push')"
+Type 6 = TypeError: Cannot read properties of undefined (reading 'push')
+Type 7 = MissingSchemaError: Schema hasn't been registered for model "[object Object]".
+Type 8 = TypeError: Invalid schema configuration: `model` is not a valid type within the array `audio`
