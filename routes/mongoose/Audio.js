@@ -3,7 +3,7 @@ const router = express.Router();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const User = require("../../models/User");
-const { Audio } = require("../../models/Audio");
+const Audio = require("../../models/Audio");
 
 router.use(
   bodyParser.urlencoded({
@@ -17,17 +17,17 @@ mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
   autoIndex: true,
 });
 
-router.get("/addAudio", async (req, res) => {
-  const userID = req.params.userID;
+router.post("/addAudio", async (req, res) => {
+  const userID = req.body.userID;
   const name = req.body.name;
   const downloadUrl = req.body.downloadUrl;
-  const user = await User.findById(userID);
-  if (!user || !id) {
+  const user = await User.findOne({ userID });
+  if (!user) {
     console.log("User not found");
     return res.sendStatus(401);
   } else {
-    const audio = await Audio.findOne({ userID });
-    if (!audio) {
+    const audiofile = await Audio.findOne({ userID });
+    if (!audiofile) {
       var audioFile = new Audio({
         userID: userID,
         audioDetails: [
@@ -49,11 +49,21 @@ router.get("/addAudio", async (req, res) => {
           });
         });
     } else {
-      console.log(audio);
-      // audio.audioDetails.push({
-      //   "name" : name,
-      //   "downloadUrl" : downloadUrl
-      // });
+      audiofile.audioDetails.push({
+        "name" : name,
+        "downloadUrl" : downloadUrl
+      });
+      audiofile
+        .save()
+        .then(() => {
+          return res.sendStatus(200);
+        })
+        .catch((error) => {
+          console.log(error);
+          return res.send({
+            error: "Some Error Occured",
+          });
+        });
     }
   }
 });
