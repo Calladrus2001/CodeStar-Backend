@@ -1,0 +1,7 @@
+ERRORS
+
+**** PRIMARY TYPES ****
+
+**** **** *** **** ****
+
+Type 6 = "TypeError: Cannot read properties of undefined (reading 'push')"

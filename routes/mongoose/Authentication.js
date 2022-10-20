@@ -1,8 +1,9 @@
 const express = require('express');
-const router = express.Router;
+const router = express.Router();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const User = require("../../models/User");
 
 router.use(bodyParser.urlencoded({
     extended: true
@@ -56,4 +57,4 @@ router.post("/login", async (req, res)=>{
   });
 });
 
-export default router;
+module.exports = router;
