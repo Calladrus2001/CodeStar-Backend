@@ -50,8 +50,8 @@ router.post("/addAudio", async (req, res) => {
         });
     } else {
       audiofile.audioDetails.push({
-        "name" : name,
-        "downloadUrl" : downloadUrl
+        name: name,
+        downloadUrl: downloadUrl,
       });
       audiofile
         .save()
@@ -68,4 +68,17 @@ router.post("/addAudio", async (req, res) => {
   }
 });
 
+router.get("/getAudio", async (req, res) => {
+  const userID = req.query.userID;
+  const audiofiles = await Audio.findOne({ userID });
+  if (!audiofiles)
+    return res.send({
+      message: "No files found",
+    });
+  else {
+    res.send({
+      audioFiles: audiofiles.audioDetails,
+    });
+  }
+});
 module.exports = router;
