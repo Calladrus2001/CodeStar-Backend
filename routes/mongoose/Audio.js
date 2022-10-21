@@ -21,6 +21,7 @@ router.post("/addAudio", async (req, res) => {
   const userID = req.body.userID;
   const name = req.body.name;
   const downloadUrl = req.body.downloadUrl;
+  const time = req.body.time;
   const user = await User.findOne({ userID });
   if (!user) {
     console.log("User not found");
@@ -34,6 +35,7 @@ router.post("/addAudio", async (req, res) => {
           {
             name: name,
             downloadUrl: downloadUrl,
+            time: time
           },
         ],
       });
@@ -52,6 +54,7 @@ router.post("/addAudio", async (req, res) => {
       audiofile.audioDetails.push({
         name: name,
         downloadUrl: downloadUrl,
+        time: time
       });
       audiofile
         .save()

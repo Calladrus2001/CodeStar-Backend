@@ -1,59 +1,59 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const User = require("../../models/User");
 
-router.use(bodyParser.urlencoded({
-    extended: true
-}));
+router.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
 router.use(bodyParser.json());
 
 mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
   useNewUrlParser: true,
-  autoIndex: true
+  autoIndex: true,
 });
 
-router.post("/addUser", async (req, res)=>{
+router.post("/addUser", async (req, res) => {
   const userName = req.body.userName;
   const hashed = await bcrypt.hash(req.body.password, 7);
 
-  const user = await User.findOne({userName});
-  if (user) return res.send({
-    "error": "A User with the given Username already exists"
-  });
+  const user = await User.findOne({ userName });
+  if (user)
+    return res.sendStatus(400);
 
-  const newUser = new User({"userName" : userName, "password": hashed});
+  const newUser = new User({ userName: userName, password: hashed });
 
-  newUser.save().then(()=>{
-    return res.send({
-    "userID": newUser.id
+  newUser
+    .save()
+    .then(() => {
+      return res.send({
+        userID: newUser.id,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.send({
+        error: "Some Error Occured",
+      });
     });
-  }).catch((error)=>{
-    console.log(error);
-    return res.send({
-      "error" : "Some Error Occured"
-    });
-  });
 });
 
-router.post("/login", async (req, res)=>{
+router.post("/login", async (req, res) => {
   const userName = req.body.userName;
   const password = req.body.password;
 
-  const user = await User.findOne({userName});
-  if (!user) return res.send({
-    "error": "No User exists with these credentials"
-  });
+  const user = await User.findOne({ userName });
+  if (!user) return res.sendStatus(404);
   else {
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.send({
-    "error": "No User exists with these credentials"
-  });;
+    if (!isMatch) return res.sendStatus(404);
   }
   res.send({
-    "userID": user.id
+    userID: user.id,
   });
 });
 

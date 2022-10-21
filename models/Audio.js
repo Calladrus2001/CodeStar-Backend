@@ -17,6 +17,9 @@ const Audio = mongoose.model("Audio", {
         required: true,
         trim: true,
       },
+      time: {
+        type: String,
+      },
     },
   ],
 });
