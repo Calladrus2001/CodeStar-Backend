@@ -35,7 +35,7 @@ router.post("/addAudio", async (req, res) => {
           {
             name: name,
             downloadUrl: downloadUrl,
-            time: time
+            time: time,
           },
         ],
       });
@@ -54,7 +54,7 @@ router.post("/addAudio", async (req, res) => {
       audiofile.audioDetails.push({
         name: name,
         downloadUrl: downloadUrl,
-        time: time
+        time: time,
       });
       audiofile
         .save()
