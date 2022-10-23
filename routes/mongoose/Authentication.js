@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
+const {createNewUser} = require("../../hedera/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -29,17 +30,20 @@ router.post("/addUser", async (req, res) => {
 
   newUser
     .save()
-    .then(() => {
-      return res.send({
-        userID: newUser.id,
-      });
-    })
     .catch((error) => {
       console.log(error);
       return res.send({
         error: "Some Error Occured",
       });
     });
+  if (await createNewUser(newUser.id) == true) {
+    return res.send({
+      "userID" : newUser.id
+    });
+  }
+  else {
+    res.sendStatus(500);
+  }
 });
 
 router.post("/login", async (req, res) => {

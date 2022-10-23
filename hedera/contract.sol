@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 contract MyContract {
   address private owner;
-  mapping (string => uint) public balances;
+  mapping (string => uint16) public balances;
   
   constructor() {
     owner = msg.sender;
