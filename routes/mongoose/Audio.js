@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Audio = require("../../models/Audio");
+const { createNewAudioFile } = require("../../hedera/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -22,12 +23,13 @@ router.post("/addAudio", async (req, res) => {
   const name = req.body.name;
   const downloadUrl = req.body.downloadUrl;
   const time = req.body.time;
-  const user = await User.findOne({ userID });
+  const user = await User.findById(userID);
+  var audioID;
   if (!user) {
     console.log("User not found");
     return res.sendStatus(401);
   } else {
-    const audiofile = await Audio.findOne({ userID });
+    const audiofile = await Audio.findOne({ userID: userID });
     if (!audiofile) {
       var audioFile = new Audio({
         userID: userID,
@@ -42,14 +44,18 @@ router.post("/addAudio", async (req, res) => {
       audioFile
         .save()
         .then(() => {
-          return res.sendStatus(200);
+          audioID = audioFile.id;
         })
         .catch((error) => {
           console.log(error);
-          return res.send({
-            error: "Some Error Occured",
-          });
+          return res.sendStatus(500);
         });
+      try {
+        await createNewAudioFile(user.id);
+      } catch (e) {
+        Audio.findByIdAndDelete(audioID);
+        return res.sendStatus(500);
+      }
     } else {
       audiofile.audioDetails.push({
         name: name,
@@ -59,16 +65,22 @@ router.post("/addAudio", async (req, res) => {
       audiofile
         .save()
         .then(() => {
-          return res.sendStatus(200);
+          audioID = audiofile.id;
         })
-        .catch((error) => {
-          console.log(error);
-          return res.send({
-            error: "Some Error Occured",
-          });
+        .catch((e) => {
+          console.log(e.message);
+          return res.sendStatus(500);
         });
+      try {
+        await createNewAudioFile(user.id);
+      } catch (e) {
+        console.log(e.message);
+        Audio.findByIdAndDelete(audioID);
+        return res.sendStatus(500);
+      }
     }
   }
+  res.sendStatus(200);
 });
 
 router.get("/getAudio", async (req, res) => {

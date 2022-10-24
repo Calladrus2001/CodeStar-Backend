@@ -1,8 +1,8 @@
 require("dotenv").config();
-
-const express = require('express');
+const express = require("express");
 const hederaRouter = express.Router();
 const bodyParser = require("body-parser");
+
 hederaRouter.use(
   bodyParser.urlencoded({
     extended: true,
@@ -10,7 +10,7 @@ hederaRouter.use(
 );
 hederaRouter.use(bodyParser.json());
 
-var newCID = "";
+var newCID = process.env.HEDERA_newCID;
 
 const {
   AccountId,
@@ -29,7 +29,6 @@ const fs = require("fs");
 // Configure accounts and client
 const operatorId = AccountId.fromString(process.env.HEDERA_ACC_ID);
 const operatorKey = PrivateKey.fromString(process.env.HEDERA_PVT_KEY);
-
 const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
 async function init() {
@@ -52,65 +51,85 @@ async function init() {
   newCID = newContractId;
   console.log("The smart contract ID is " + newCID);
 }
-init();
+// init();
 
 async function createNewUser(uid) {
-  // Calls a function of the smart contract
-  const contractQuery = await new ContractCallQuery()
+  const contractExecTx = new ContractExecuteTransaction()
     .setGas(100000)
     .setContractId(newCID)
     .setFunction(
       "createNewUser",
       new ContractFunctionParameters().addString(uid)
-    )
-    //Set the query payment for the node returning the request
-    //This value must cover the cost of the request otherwise will fail
-    .setQueryPayment(new Hbar(2));
+    );
 
-  //Submit to a Hedera network
-  const getMessage = await contractQuery.execute(client);
-
-  // Get a string from the result at index 0
-  const message = getMessage.getString(0);
-  console.log("The contract message: " + message);
+  try {
+    const submitExecTx = await contractExecTx.execute(client);
+    const contractExecuteRx = await submitExecTx.getReceipt(client);
+    console.log(contractExecuteRx.status);
+  } catch (e) {
+    console.log(e.message);
+  }
 }
 
 async function createNewAudioFile(uid) {
-  const contractQuery = await new ContractCallQuery()
+  const contractExecTx = new ContractExecuteTransaction()
     .setGas(100000)
     .setContractId(newCID)
     .setFunction(
       "createNewAudioFile",
       new ContractFunctionParameters().addString(uid)
-    )
-    .setQueryPayment(new Hbar(2));
+    );
 
-  const getMessage = await contractQuery.execute(client);
-  const message = getMessage.getString(0);
-  console.log("The contract message: " + message);
+  try {
+    const submitExecTx = await contractExecTx.execute(client);
+    const contractExecuteRx = await submitExecTx.getReceipt(client);
+    console.log(contractExecuteRx.status);
+  } catch (e) {
+    console.log(e.message);
+  }
 }
 
-async function getBalance(uid) {
-  const contractQuery = await new ContractCallQuery()
+async function evaluateYourself(uid) {
+  var done = false;
+  const contractExecTx = await new ContractExecuteTransaction()
     .setGas(100000)
     .setContractId(newCID)
     .setFunction(
-      "getBalance",
+      "evaluateYourself",
       new ContractFunctionParameters().addString(uid)
-    )
-    .setQueryPayment(new Hbar(2));
+    );
 
-  const getMessage = await contractQuery.execute(client);
-  const message = getMessage.getString(0);
-  console.log("The contract message: " + message);
+  //Submit to a Hedera network
+  const submitExecTx = await contractExecTx.execute(client).then(() => {
+    done = true;
+  });
+  const receipt2 = await submitExecTx.getReceipt(client);
+  console.log("The transaction status is " + receipt2.status.toString());
+  return done;
 }
 
-hederaRouter.get("/getBalance", async (req, res)=>{
+async function getBalance(uid) {
+  const contractQuery = new ContractCallQuery()
+    .setGas(100000)
+    .setContractId(newCID)
+    .setFunction("getBalance", new ContractFunctionParameters().addString(uid));
+
+  const contractQuerySubmit1 = await contractQuery.execute(client);
+  const contractQueryResult1 = contractQuerySubmit1.getUint256(0)["c"];
+  return contractQueryResult1;
+}
+
+hederaRouter.get("/getBalance", async (req, res) => {
   const uid = req.query.userID;
   const balance = await getBalance(uid);
   res.send({
-    "balance" : balance
+    balance: balance,
   });
 });
 
-module.exports = {hederaRouter, createNewUser, createNewAudioFile, getBalance};
+module.exports = {
+  hederaRouter,
+  createNewUser,
+  createNewAudioFile,
+  getBalance,
+};

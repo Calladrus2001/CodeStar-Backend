@@ -2,23 +2,28 @@
 pragma solidity ^0.8.0;
 
 contract MyContract {
-  address private owner;
-  mapping (string => uint16) public balances;
-  
-  constructor() {
-    owner = msg.sender;
-  }
+    address private owner;
+    mapping(string => int) public balances;
 
-  function createNewUser(string memory _uid) public {
-    balances[_uid] = 1000;
-  } 
+    constructor() {
+        owner = msg.sender;
+    }
 
-  function createNewAudioFile(string memory _uid) public {
-    require (balances[_uid] >= 50, "Insufficient balance");
-    balances[_uid] -= 50;
-  }
+    function createNewUser(string memory _uid) public {
+        balances[_uid] = 1000;
+    }
 
-  function getBalance(string memory _uid) public view returns (uint) {
-    return balances[_uid];
-  }
+    function createNewAudioFile(string memory _uid) public {
+        require(balances[_uid] >= 50, "Insufficient balance");
+        balances[_uid] -= 50;
+    }
+
+    function getBalance(string memory _uid) public view returns (int) {
+        return balances[_uid];
+    }
+
+    function evaluateYourself(string memory _uid) public {
+        require(balances[_uid] >= 10, "Insufficient balance");
+        balances[_uid] -= 10;
+    }
 }
