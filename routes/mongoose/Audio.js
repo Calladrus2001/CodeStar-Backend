@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Audio = require("../../models/Audio");
+const History = require("../../models/History");
 const { createNewAudioFile } = require("../../hedera/contract");
 
 router.use(
@@ -47,13 +48,14 @@ router.post("/addAudio", async (req, res) => {
           audioID = audioFile.id;
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error + "line 51");
           return res.sendStatus(500);
         });
       try {
         await createNewAudioFile(user.id);
+        await addNewExpense(name, "Expense", 50, user.id);
       } catch (e) {
-        Audio.findByIdAndDelete(audioID);
+        console.log(e.message + "line 58");
         return res.sendStatus(500);
       }
     } else {
@@ -68,14 +70,14 @@ router.post("/addAudio", async (req, res) => {
           audioID = audiofile.id;
         })
         .catch((e) => {
-          console.log(e.message);
+          console.log(e.message + "lin3 73");
           return res.sendStatus(500);
         });
       try {
         await createNewAudioFile(user.id);
+        await addNewExpense(name, "Expense", 50, user.id);
       } catch (e) {
-        console.log(e.message);
-        Audio.findByIdAndDelete(audioID);
+        console.log(e.message + "line 80");
         return res.sendStatus(500);
       }
     }
@@ -96,4 +98,38 @@ router.get("/getAudio", async (req, res) => {
     });
   }
 });
+
+async function addNewExpense(name, typeOf, amount, userID) {
+  const amt = Number(amount);
+  const historyInstance = await History.findOne({
+    userID,
+  });
+  if (!historyInstance.details) {
+    var newHistory = new History({
+      "userID": userID,
+      details: [
+        {
+          message: `Created new Audiobook: ${name}`,
+          type: typeOf,
+          time: Date.now().toLocaleString("en-us", {
+            timeZone: "IST",
+          }),
+          cost: amt,
+        },
+      ],
+    });
+    newHistory.save();
+  } else {
+    historyInstance.details.push({
+      message: `Created new Audiobook: ${name}`,
+      type: typeOf,
+      time: Date.now().toLocaleString("en-us", {
+        timeZone: "IST",
+      }),
+      cost: amt,
+    });
+    historyInstance.save();
+  }
+}
+
 module.exports = router;
