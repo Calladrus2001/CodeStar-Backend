@@ -102,7 +102,7 @@ async function addNewExpense(name, typeOf, amount, userID) {
   const historyInstance = await History.findOne({
     userID,
   });
-  if (!historyInstance.details) {
+  if (!historyInstance) {
     var newHistory = new History({
       "userID": userID,
       details: [
