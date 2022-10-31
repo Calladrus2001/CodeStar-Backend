@@ -70,14 +70,12 @@ router.post("/addAudio", async (req, res) => {
           audioID = audiofile.id;
         })
         .catch((e) => {
-          console.log(e.message + "lin3 73");
           return res.sendStatus(500);
         });
       try {
         await createNewAudioFile(user.id);
         await addNewExpense(name, "Expense", 50, user.id);
       } catch (e) {
-        console.log(e.message + "line 80");
         return res.sendStatus(500);
       }
     }

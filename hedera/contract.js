@@ -83,14 +83,12 @@ async function createNewAudioFile(uid) {
   try {
     const submitExecTx = await contractExecTx.execute(client);
     const contractExecuteRx = await submitExecTx.getReceipt(client);
-    console.log(contractExecuteRx.status);
   } catch (e) {
     console.log(e.message);
   }
 }
 
 async function evaluateYourself(uid) {
-  var done = false;
   const contractExecTx = await new ContractExecuteTransaction()
     .setGas(100000)
     .setContractId(newCID)
@@ -105,7 +103,6 @@ async function evaluateYourself(uid) {
   });
   const receipt2 = await submitExecTx.getReceipt(client);
   console.log("The transaction status is " + receipt2.status.toString());
-  return done;
 }
 
 async function getBalance(uid) {
@@ -132,4 +129,5 @@ module.exports = {
   createNewUser,
   createNewAudioFile,
   getBalance,
+  evaluateYourself
 };

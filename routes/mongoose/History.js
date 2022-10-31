@@ -21,7 +21,7 @@ router.get("/getHistory", async (req, res) => {
   const historyInstance = await History.findOne({
     userID
   });
-  if (!historyInstance.details) {
+  if (!historyInstance) {
     console.log("No Expense History found");
     return res.sendStatus(404);
   } else {

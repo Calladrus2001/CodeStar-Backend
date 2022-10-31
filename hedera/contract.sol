@@ -23,7 +23,7 @@ contract MyContract {
     }
 
     function evaluateYourself(string memory _uid) public {
-        require(balances[_uid] >= 10, "Insufficient balance");
-        balances[_uid] -= 10;
+        require(balances[_uid] >= 20, "Insufficient balance");
+        balances[_uid] -= 20;
     }
 }
