@@ -98,11 +98,8 @@ async function evaluateYourself(uid) {
     );
 
   //Submit to a Hedera network
-  const submitExecTx = await contractExecTx.execute(client).then(() => {
-    done = true;
-  });
+  const submitExecTx = await contractExecTx.execute(client);
   const receipt2 = await submitExecTx.getReceipt(client);
-  console.log("The transaction status is " + receipt2.status.toString());
 }
 
 async function getBalance(uid) {

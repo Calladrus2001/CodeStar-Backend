@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const bodyParser = require("body-parser");
-const {get3Random} = require("../../models/Evaluation");
 const History = require("../../models/History");
 const {evaluateYourself} = require("../../hedera/contract");
+const sentences = require('../../models/Evaluation');
 
 router.use(
   bodyParser.urlencoded({
@@ -12,19 +12,39 @@ router.use(
 );
 router.use(bodyParser.json());
 
-router.post("/evaluation", (req, res)=>{
-  const test = req.body.test;
+router.post("/reading", (req, res)=>{
+  const random = get3Random();
   const userID = req.body.userID;
   try {
     evaluateYourself(userID);
-    addNewExpense(test, "Expense", 20, userID);
+    addNewExpense("Reading", "Expense", 20, userID);
   }
   catch(e){
     console.log(e);
     return res.sendStatus(500);
   }
-  return res.sendStatus(200);
+  return res.send({
+    "sentences" : random
+  });
 });
+
+function get3Random(){
+  const arr = [];
+  var flag = 0;
+  for (i = 0; i < 3; i++){
+    var idx = Math.floor(Math.random() * sentences.length);
+    for (j = 0; j < arr.length; j++){
+      if (sentences[idx] == arr[j]){
+        i -= 1;
+        flag = 1;
+        break;
+      }
+    }
+    if (flag == 0) arr.push(sentences[idx]);
+    flag = 0;
+  }
+  return arr;
+}
 
 async function addNewExpense(test, typeOf, amount, userID) {
   const amt = Number(amount);

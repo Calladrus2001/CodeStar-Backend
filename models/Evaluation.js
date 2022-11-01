@@ -10,22 +10,6 @@ const sentences = [
   "I am not going to continue knocking that old door that doesn't open for me. I am going to create my own door and walk through that"
 ];
 
-function get3Random(){
-  const arr = [];
-  var flag = 0;
-  for (i = 0; i < 3; i++){
-    var idx = Math.floor(Math.random() * sentences.length);
-    for (j = 0; j < arr.length; j++){
-      if (idx == arr[j]){
-        i -= 1;
-        flag = 1;
-        break;
-      }
-    }
-    if (flag == 0) arr.push(idx);
-    flag = 0;
-  }
-  return arr;
-}
 
-module.exports = get3Random;
+
+module.exports = sentences;
