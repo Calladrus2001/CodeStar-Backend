@@ -20,64 +20,58 @@ mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
 });
 
 router.post("/addAudio", async (req, res) => {
-  const userID = req.body.userID;
   const name = req.body.name;
   const downloadUrl = req.body.downloadUrl;
   const time = req.body.time;
   const user = await User.findById(userID);
   var audioID;
-  if (!user) {
-    console.log("User not found");
-    return res.sendStatus(401);
+  const audiofile = await Audio.findOne({ userID: userID });
+  if (!audiofile) {
+    var audioFile = new Audio({
+      userID: userID,
+      audioDetails: [
+        {
+          name: name,
+          downloadUrl: downloadUrl,
+          time: time,
+        },
+      ],
+    });
+    audioFile
+      .save()
+      .then(() => {
+        audioID = audioFile.id;
+      })
+      .catch((error) => {
+        console.log(error + "line 51");
+        return res.sendStatus(500);
+      });
+    try {
+      await createNewAudioFile(user.id);
+      await addNewExpense(name, "Expense", 50, user.id);
+    } catch (e) {
+      console.log(e.message + "line 58");
+      return res.sendStatus(500);
+    }
   } else {
-    const audiofile = await Audio.findOne({ userID: userID });
-    if (!audiofile) {
-      var audioFile = new Audio({
-        userID: userID,
-        audioDetails: [
-          {
-            name: name,
-            downloadUrl: downloadUrl,
-            time: time,
-          },
-        ],
-      });
-      audioFile
-        .save()
-        .then(() => {
-          audioID = audioFile.id;
-        })
-        .catch((error) => {
-          console.log(error + "line 51");
-          return res.sendStatus(500);
-        });
-      try {
-        await createNewAudioFile(user.id);
-        await addNewExpense(name, "Expense", 50, user.id);
-      } catch (e) {
-        console.log(e.message + "line 58");
+    audiofile.audioDetails.push({
+      name: name,
+      downloadUrl: downloadUrl,
+      time: time,
+    });
+    audiofile
+      .save()
+      .then(() => {
+        audioID = audiofile.id;
+      })
+      .catch((e) => {
         return res.sendStatus(500);
-      }
-    } else {
-      audiofile.audioDetails.push({
-        name: name,
-        downloadUrl: downloadUrl,
-        time: time,
       });
-      audiofile
-        .save()
-        .then(() => {
-          audioID = audiofile.id;
-        })
-        .catch((e) => {
-          return res.sendStatus(500);
-        });
-      try {
-        await createNewAudioFile(user.id);
-        await addNewExpense(name, "Expense", 50, user.id);
-      } catch (e) {
-        return res.sendStatus(500);
-      }
+    try {
+      await createNewAudioFile(user.id);
+      await addNewExpense(name, "Expense", 50, user.id);
+    } catch (e) {
+      return res.sendStatus(500);
     }
   }
   res.sendStatus(200);
@@ -104,7 +98,7 @@ async function addNewExpense(name, typeOf, amount, userID) {
   });
   if (!historyInstance) {
     var newHistory = new History({
-      "userID": userID,
+      userID: userID,
       details: [
         {
           message: `Created new Audiobook: ${name}`,
