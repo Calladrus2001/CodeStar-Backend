@@ -5,6 +5,10 @@ const router = express.Router();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
+const Audio = require("../../models/Audio");
+const History = require("../../models/History");
+const { createNewAudioFile } = require("../../hedera/contract");
+
 router.use(
   bodyParser.urlencoded({
     extended: true,
@@ -30,14 +34,16 @@ mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
 });
 
 router.post("/synthAudio", async (req, res) => {
-  // params.OutputS3BucketName = `vishesh-code-star/${req.body.userID}`;
+  const userID = req.body.userID;
+  const name = req.body.name;
+  const time = req.body.time;
   params.Text = req.body.text;
-  console.log(params.Text);
 
   await pollyClient
     .send(new StartSpeechSynthesisTaskCommand(params))
     .then((response) => {
-      console.log(response);
+      const downloadUrl = response.SynthesisTask.OutputUri;
+      addAudio(userID, name, time, downloadUrl);
     })
     .catch((err) => {
       console.log(err);
@@ -46,5 +52,103 @@ router.post("/synthAudio", async (req, res) => {
 
   res.sendStatus(200);
 });
+
+router.get("/getAudio", async (req, res) => {
+  const userID = req.query.userID;
+  const audiofiles = await Audio.findOne({ userID });
+  if (!audiofiles)
+    return res.send({
+      message: "No files found",
+    });
+  else {
+    res.send({
+      audioFiles: audiofiles.audioDetails,
+    });
+  }
+});
+
+async function addAudio(_userID, _name, _time, _url) {
+  var audioID;
+  const audiofile = await Audio.findOne({ userID: _userID });
+  if (!audiofile) {
+    var audioFile = new Audio({
+      userID: _userID,
+      audioDetails: [
+        {
+          name: _name,
+          downloadUrl: _url,
+          time: _time,
+        },
+      ],
+    });
+    audioFile
+      .save()
+      .then(() => {
+        audioID = audioFile.id;
+      })
+      .catch((error) => {
+        console.log(error + "line 65");
+      });
+    try {
+      await createNewAudioFile(_userID);
+      await addNewExpense(_name, "Expense", 50, _userID);
+    } catch (e) {
+      console.log(e.message + "line 72");
+    }
+  } else {
+    audiofile.audioDetails.push({
+      name: _name,
+      downloadUrl: _url,
+      time: _time,
+    });
+    audiofile
+      .save()
+      .then(() => {
+        audioID = audiofile.id;
+      })
+      .catch((e) => {
+        console.log(e.message);
+      });
+    try {
+      await createNewAudioFile(_userID);
+      await addNewExpense(_name, "Expense", 50, _userID);
+    } catch (e) {
+      console.log(e.message);
+    }
+  }
+}
+
+async function addNewExpense(name, typeOf, amount, userID) {
+  const amt = Number(amount);
+  const historyInstance = await History.findOne({
+    userID,
+  });
+  if (!historyInstance) {
+    var newHistory = new History({
+      userID: userID,
+      details: [
+        {
+          message: `Created new Audiobook: ${name}`,
+          type: typeOf,
+          time: Date.now().toLocaleString("en-us", {
+            timeZone: "IST",
+          }),
+          cost: amt,
+        },
+      ],
+    });
+    newHistory.save();
+  } else {
+    historyInstance.details.push({
+      message: `Created new Audiobook: ${name}`,
+      type: typeOf,
+      time: Date.now().toLocaleString("en-us", {
+        timeZone: "IST",
+      }),
+      cost: amt,
+    });
+    historyInstance.save();
+  }
+}
 
 module.exports = router;
