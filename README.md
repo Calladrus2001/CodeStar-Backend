@@ -32,7 +32,10 @@ HEDERA_PUB_KEY="YOUR_PUBLIC_KEY"
 HEDERA_ACC_ID="YOUR_ACCOUNT_ID"
 HEDERA_newCID = "0.0.CONTRACT_ID"
 ```
-Furtheremore, uncomment `line 54` in `/hedera/contract.js` to initialise the Smart contract, you would get the *new Contract ID* in console logs, put that value in `HEDERA_newCID` in your `.env` file. Comment `line 54` again.
+Furtheremore, uncomment `line 54` in `/hedera/contract.js` to initialise the Smart contract, you would get the *new Contract ID* in console logs, put that value in `HEDERA_newCID` in your `.env` file. Comment `line 54` again. 
+ 
+After replacing `Flutter TTS` with `AWS Polly`, some additional changes are required. Follow [this link](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/loading-node-credentials-shared.html) and make sure that you are using the right IAM User Credentials.
+
 ## API Reference
 
 Checkout my Postman API collection below:
@@ -40,13 +43,10 @@ Checkout my Postman API collection below:
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/20360721-600d6471-c4b1-43ed-8d24-44f2b5beac4a?action=collection%2Ffork&collection-url=entityId%3D20360721-600d6471-c4b1-43ed-8d24-44f2b5beac4a%26entityType%3Dcollection%26workspaceId%3Db2c849e2-484f-4dcd-bbe6-daf758f94b9b)
 
 ## Future Roadmap
-
- - State Management (Client)
+ 
+ - ~~AWS Polly for Speech Synthesis~~
  - AWS Deployement
- - Wynk Music Player-like animations
- - Social Functionalities
- - Dyslexia-friendly Games
-
+ 
 
 ## Acknowledgements
 This is a list of resources that helped me immensely while making this project.
