@@ -11,22 +11,19 @@ router.use(
 );
 router.use(bodyParser.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
-  useNewUrlParser: true,
-  autoIndex: true,
-});
-
 router.get("/getHistory", async (req, res) => {
   const userID = req.query.userID;
   const historyInstance = await History.findOne({
-    userID
+    userID,
   });
   if (!historyInstance) {
     console.log("No Expense History found");
-    return res.sendStatus(404);
+    return res.status(200).send({
+      message: "No Expense History found",
+    });
   } else {
     res.send({
-      "History": historyInstance.details,
+      History: historyInstance.details,
     });
   }
 });

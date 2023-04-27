@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const bodyParser = require("body-parser");
 const History = require("../../models/History");
-const {evaluateYourself} = require("../../hedera/contract");
 const {sentences, urls} = require('../../models/Evaluation');
 
 router.use(
@@ -16,7 +15,7 @@ router.get("/eval", (req, res)=>{
   const userID = req.query.userID;
   const type = req.query.type;
   try {
-    evaluateYourself(userID);
+    // evaluateYourself(userID);
     addNewExpense(type, "Expense", 20, userID);
   }
   catch(e){

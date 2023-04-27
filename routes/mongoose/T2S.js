@@ -1,13 +1,11 @@
-const {StartSpeechSynthesisTaskCommand} = require("@aws-sdk/client-polly");
-const pollyClient = require("../../models/pollyClient");
+const t2sClient = require("../../models/t2sClient");
+const t2sBucket = require("../../models/t2sBucket");
 const express = require("express");
 const router = express.Router();
 const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
 
 const Audio = require("../../models/Audio");
 const History = require("../../models/History");
-const { createNewAudioFile } = require("../../hedera/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -16,40 +14,50 @@ router.use(
 );
 router.use(bodyParser.json());
 
-var params = {
-  Engine: "standard",
-  // LanguageCode: hindi
-  LanguageCode: "en-US",
-  OutputFormat: "mp3",
-  OutputS3BucketName: "vishesh-code-star",
-  SampleRate: "22050",
-  Text: "This will be replaced by text in the request body",
-  TextType: "text",
-  VoiceId: "Joanna",
-};
-
-mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
-  useNewUrlParser: true,
-  autoIndex: true,
-});
-
 router.post("/synthAudio", async (req, res) => {
   const userID = req.body.userID;
   const name = req.body.name;
   const time = req.body.time;
-  params.Text = req.body.text;
+  const text = req.body.text;
+  const file = t2sBucket.file(`${userID}/${name}`);
 
-  await pollyClient
-    .send(new StartSpeechSynthesisTaskCommand(params))
-    .then((response) => {
-      const downloadUrl = response.SynthesisTask.OutputUri;
-      addAudio(userID, name, time, downloadUrl);
-    })
-    .catch((err) => {
-      console.log(err);
-      return res.sendStatus(500);
+  const request = {
+    input: { text: text },
+    voice: { languageCode: "en-US", ssmlGender: "FEMALE" },
+    audioConfig: { audioEncoding: "MP3" },
+  };
+
+  const writeStream = file.createWriteStream({
+    resumable: false,
+    metadata: {
+      contentType: "audio/mpeg",
+    },
+  });
+
+  t2sClient.synthesizeSpeech(request, (err, response) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    // Write the synthesized audio content to the file in the bucket
+    const audioContent = response.audioContent;
+    writeStream.write(audioContent);
+    writeStream.end();
+
+    writeStream.on("finish", () => {
+      console.log(
+        `Audio file ${name}.mp3 has been written to bucket ${t2sBucket.name}`
+      );
     });
+  });
 
+  const url = await file.getSignedUrl({
+    action: "read",
+    expires: "03-17-2099",
+  }).then((val)=>{
+    addAudio(userID, name, time, val[0]);
+  });
+  
   res.sendStatus(200);
 });
 
@@ -87,13 +95,13 @@ async function addAudio(_userID, _name, _time, _url) {
         audioID = audioFile.id;
       })
       .catch((error) => {
-        console.log(error + "line 65");
+        console.log(error + "line 90");
       });
     try {
-      await createNewAudioFile(_userID);
+      // await createNewAudioFile(_userID);
       await addNewExpense(_name, "Expense", 50, _userID);
     } catch (e) {
-      console.log(e.message + "line 72");
+      console.log(e.message + "line 96");
     }
   } else {
     audiofile.audioDetails.push({
@@ -110,7 +118,7 @@ async function addAudio(_userID, _name, _time, _url) {
         console.log(e.message);
       });
     try {
-      await createNewAudioFile(_userID);
+      // await createNewAudioFile(_userID);
       await addNewExpense(_name, "Expense", 50, _userID);
     } catch (e) {
       console.log(e.message);
