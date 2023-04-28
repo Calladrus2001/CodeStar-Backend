@@ -3,6 +3,12 @@ const History = require("../../models/History");
 const express = require("express");
 const router = express.Router();
 const bodyParser = require("body-parser");
+const [
+  createNewUserFx,
+  createNewAudioFileFx,
+  evaluateYourselfFx,
+  getBalanceFx,
+] = require("../../scripts/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -27,5 +33,13 @@ router.get("/getHistory", async (req, res) => {
     });
   }
 });
+
+router.get("/getBalance", async (req, res) => {
+  const userID = req.query.userID;
+  const balance = await getBalanceFx(userID);
+  res.status(200).send({
+    "balance" : parseInt(balance, 10)
+  });
+})
 
 module.exports = router;

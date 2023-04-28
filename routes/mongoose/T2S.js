@@ -6,6 +6,12 @@ const bodyParser = require("body-parser");
 
 const Audio = require("../../models/Audio");
 const History = require("../../models/History");
+const [
+  createNewUserFx,
+  createNewAudioFileFx,
+  evaluateYourselfFx,
+  getBalanceFx,
+] = require("../../scripts/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -95,13 +101,13 @@ async function addAudio(_userID, _name, _time, _url) {
         audioID = audioFile.id;
       })
       .catch((error) => {
-        console.log(error + "line 90");
+        console.log(error + "line 99");
       });
     try {
-      // await createNewAudioFile(_userID);
+      await createNewAudioFileFx(_userID);
       await addNewExpense(_name, "Expense", 50, _userID);
     } catch (e) {
-      console.log(e.message + "line 96");
+      console.log(e.message + "line 105");
     }
   } else {
     audiofile.audioDetails.push({
@@ -118,7 +124,7 @@ async function addAudio(_userID, _name, _time, _url) {
         console.log(e.message);
       });
     try {
-      // await createNewAudioFile(_userID);
+      await createNewAudioFileFx(_userID);
       await addNewExpense(_name, "Expense", 50, _userID);
     } catch (e) {
       console.log(e.message);

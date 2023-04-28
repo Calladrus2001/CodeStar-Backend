@@ -3,6 +3,12 @@ const router = express.Router();
 const bodyParser = require("body-parser");
 const History = require("../../models/History");
 const {sentences, urls} = require('../../models/Evaluation');
+const [
+  createNewUserFx,
+  createNewAudioFileFx,
+  evaluateYourselfFx,
+  getBalanceFx,
+] = require("../../scripts/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -15,7 +21,7 @@ router.get("/eval", (req, res)=>{
   const userID = req.query.userID;
   const type = req.query.type;
   try {
-    // evaluateYourself(userID);
+    evaluateYourselfFx(userID);
     addNewExpense(type, "Expense", 20, userID);
   }
   catch(e){

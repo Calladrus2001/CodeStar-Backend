@@ -4,6 +4,12 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
+const [
+  createNewUserFx,
+  createNewAudioFileFx,
+  evaluateYourselfFx,
+  getBalanceFx,
+] = require("../../scripts/contract");
 
 router.use(
   bodyParser.urlencoded({
@@ -11,11 +17,6 @@ router.use(
   })
 );
 router.use(bodyParser.json());
-
-mongoose.connect("mongodb://127.0.0.1:27017/CodeStar", {
-  useNewUrlParser: true,
-  autoIndex: true,
-});
 
 router.post("/addUser", async (req, res) => {
   const userName = req.body.userName;
@@ -32,17 +33,15 @@ router.post("/addUser", async (req, res) => {
       error: "Some Error Occured",
     });
   });
-  res.sendStatus(200);
-  // try {
-  //   await createNewUser(newUser.id).then(() => {
-  //     res.send({
-  //       userID: newUser.id,
-  //     });
-  //   });
-  // } catch (e) {
-  //   User.findByIdAndDelete(newUser.id);
-  //   res.sendStatus(500);
-  // }
+  try {
+    createNewUserFx(newUser.id);
+  } catch (e) {
+    console.log(e);
+    User.findByIdAndDelete(newUser.id);
+  }
+  res.status(200).send({
+    userID: newUser.id,
+  });
 });
 
 router.post("/login", async (req, res) => {

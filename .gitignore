@@ -3,3 +3,5 @@ package-lock.json
 .env
 contract_sol_MyContract.bin
 pizza100-358205-633824a250a6.json
+artifacts
+cache
